@@ -50,12 +50,36 @@ def make_downloader(id: str, label: str, title: str, desc: str, extra: Any = Non
     )
 
 app_ui = ui.page_fluid(
-    ui.panel_title("Audio Editor V0.0.1"),
+    ui.panel_title("Audio Editor V0.0.2"),
     ui.layout_sidebar(
         ui.panel_sidebar(
             ui.input_file("file1", "Choose MP3/WAV File", accept=[".mp3", ".wav"], multiple=False),
-            ui.input_numeric("cut_start", "Cut start (s)", 1),
-            ui.input_numeric("cut_end", "Cut end (s)", 2),
+            ui.row(ui.column(
+                    5,
+                    ui.input_numeric("cut_start_min", "Cut start (min)", 0)
+                ),
+                ui.column(
+                    1,
+                    ui.HTML("<center style='margin-top:37px'><b>:</b></center>")
+                ),
+                ui.column(
+                5,
+                ui.input_numeric("cut_start_s", "Cut start (s)", 1)
+                )
+            ),
+            ui.row(ui.column(
+                    5,
+                    ui.input_numeric("cut_end_min", "Cut end (min)", 0)
+                ),
+                ui.column(
+                    1,
+                    ui.HTML("<center style='margin-top:37px'><b>:</b></center>")
+                ),
+                ui.column(
+                5,
+                ui.input_numeric("cut_end_s", "Cut end (s)", 2)
+                )
+            ),
             ui.row(
                 make_downloader(
                     "mp3downloader",
@@ -134,7 +158,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     def audio_edited():
         if audio() is not None:
             id = ui.notification_show("Preparing edited audio output...", duration=None)
-            edited_audio.set(edit_audio(audio = audio(), sr=sr(), first_cut=input.cut_start(), last_cut=input.cut_end()))
+            edited_audio.set(edit_audio(audio = audio(), sr=sr(), first_cut=input.cut_start_min()*60+input.cut_start_s(), last_cut=input.cut_end_min()*60+input.cut_end_s()+1))
             ui.notification_remove(id)
 
     @reactive.effect
