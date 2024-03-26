@@ -10,10 +10,10 @@ This Python script provides a simple audio editing tool using the Shiny library.
 ### How to Run
 1. Ensure you have Python installed on your system.
 2. Install the required Python packages if you haven't already by running:
-`pip install pandas pydub numpy shiny faicons ipython`
+```pip install pandas pydub numpy shiny faicons ipython```
 3. Save the provided code snippet into a Python file, e.g., `audio_editor.py`.
 4. Execute the script using the following command:
-`python -m shiny run audio_editor.py`
+```python -m shiny run audio_editor.py```
 
 ### Usage
 1. Choose an MP3/WAV file by clicking on "Choose MP3/WAV File" and select the desired file.
