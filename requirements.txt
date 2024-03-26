@@ -3,3 +3,4 @@ pydub
 numpy
 shiny
 faicons
+IPython
