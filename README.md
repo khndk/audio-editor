@@ -14,10 +14,10 @@ This Python script provides a simple audio editing tool using the Shiny library.
 ```
 pip install pandas pydub numpy shiny faicons ipython
 ```
-3. Save the provided code snippet into a Python file, e.g., `audio_editor.py`.
+3. Save the provided code snippet into a Python file, e.g., `app.py`.
 4. Execute the script using the following command:
 ```
-python -m shiny run audio_editor.py
+python -m shiny run app.py
 ```
 
 ### Usage
