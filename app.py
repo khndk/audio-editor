@@ -25,11 +25,16 @@ def load_audio_file(file_path):
 
 def edit_audio(audio, sr, first_cut, last_cut):
     if audio is not None:
-        return(np.append(audio[0:sr*first_cut], audio[sr*last_cut:len(audio)]))
+        channels = 2 if (audio.ndim == 2 and audio.shape[1] == 2) else 1
+        if channels == 2:
+            return(np.concatenate((audio[:sr*first_cut,:], audio[sr*last_cut:,]), axis=0))
+        else:
+            return(np.concatenate((audio[:sr*first_cut], audio[sr*last_cut:]), axis=0))
+
 
 def make_downloader(id: str, label: str, title: str, desc: str, extra: Any = None):
     return ui.column(
-        12,#6,
+        6,
         ui.div(
             {"class": "card mb-4"},
             ui.div(title, class_="card-header"),
@@ -52,12 +57,12 @@ app_ui = ui.page_fluid(
             ui.input_numeric("cut_start", "Cut start (s)", 1),
             ui.input_numeric("cut_end", "Cut end (s)", 2),
             ui.row(
-                #make_downloader(
-                #    "mp3downloader",
-                #    label="Download MP3",
-                #    title="Download audio (MP3)",
-                #    desc="Downloads edited audio as MP3",
-                #),
+                make_downloader(
+                    "mp3downloader",
+                    label="Download MP3",
+                    title="Download audio (MP3)",
+                    desc="Downloads edited audio as MP3",
+                ),
                 make_downloader(
                     "wavdownloader",
                     label="Download WAV",
@@ -114,7 +119,12 @@ def server(input: Inputs, output: Outputs, session: Session):
             sr.set(parsed_sr)
             ui.notification_remove(id)
         if audio() is not None:
-            output = Audio(data = audio(), rate=sr())
+            channels = 2 if (audio().ndim == 2 and audio().shape[1] == 2) else 1
+            if channels == 2:
+                output = Audio(data = audio().T, rate=sr())
+            else:
+                output = Audio(data = audio(), rate=sr())
+
         else:
             output = None
         return output
@@ -122,16 +132,16 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.effect
     @reactive.event(input.preview_button)
     def audio_edited():
-        id = ui.notification_show("Preparing edited audio output...", duration=None)
-        edited_audio.set(edit_audio(audio = audio(), sr=sr(), first_cut=input.cut_start(), last_cut=input.cut_end()))
-        ui.notification_remove(id)
+        if audio() is not None:
+            id = ui.notification_show("Preparing edited audio output...", duration=None)
+            edited_audio.set(edit_audio(audio = audio(), sr=sr(), first_cut=input.cut_start(), last_cut=input.cut_end()))
+            ui.notification_remove(id)
 
     @reactive.effect
     @reactive.event(input.apply_button)
     def _():
         if edited_audio() is not None:
             id = ui.notification_show("Appling settings...", duration=None, type="message")
-            print(f"id: {id}")
             audio.set(edited_audio())
             ui.notification_remove(id)
             ui.notification_show("Settings applied!", type="message")
@@ -139,7 +149,13 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.ui
     def play_audio_edited():
         if edited_audio() is not None:
-            return Audio(data = edited_audio(), rate=sr())
+            channels = 2 if (edited_audio().ndim == 2 and edited_audio().shape[1] == 2) else 1
+            print(f"channels: {channels}")
+            if channels == 2:
+                return Audio(data = edited_audio().T, rate=sr())
+            else:
+                return Audio(data = edited_audio(), rate=sr())
+
     
     @render.download()
     def mp3downloader():
